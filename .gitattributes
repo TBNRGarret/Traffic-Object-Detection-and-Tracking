@@ -1,0 +1,6 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+dataset\
+*.jpg
+*.png
+D:\Traffic-Object-Detection-and-Tracking\vietnam traffic vids
