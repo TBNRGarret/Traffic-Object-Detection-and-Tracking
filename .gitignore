@@ -1,0 +1,13 @@
+# Bỏ qua các thư mục chứa dữ liệu
+dataset/
+train/
+val/
+test/
+
+# Bỏ qua tất cả các định dạng ảnh
+*.jpg
+*.jpeg
+*.png
+*.JPG
+*.PNG
+*.txt
