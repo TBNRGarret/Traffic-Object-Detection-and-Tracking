@@ -1,0 +1,12 @@
+
+path: D:\FPT\dataset
+
+train: D:\FPT\dataset\train\images
+val: D:\FPT\dataset\val\images
+
+nc: 4
+names:
+  0: motorbike
+  1: car
+  2: bus
+  3: truck
