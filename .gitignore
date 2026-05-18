@@ -3,6 +3,7 @@ dataset/
 train/
 val/
 test/
+runs/
 
 # Bỏ qua tất cả các định dạng ảnh
 *.jpg
@@ -11,3 +12,4 @@ test/
 *.JPG
 *.PNG
 *.txt
+*.mp4

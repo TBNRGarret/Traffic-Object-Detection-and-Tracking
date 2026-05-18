@@ -6,7 +6,7 @@ def main():
 
     model.train(
         data=r"D:\FPT\data.yaml",
-        epochs=25,
+        epochs=20,
         imgsz=640,
         batch=16,
         device=0,
