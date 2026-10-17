@@ -1,25 +1,29 @@
-import ultralytics
+"""
+Fine-tune YOLO on Vietnam Traffic Dataset (Legacy script, standardized)
+Note: For modern optimized training, use `train_direct_vn.py` instead.
+"""
 from ultralytics import YOLO
 
+
 def main():
-    model = YOLO(r"D:\FPT\runs\detect\train\weights\best.pt")
+    model = YOLO("yolo11n.pt")
 
     model.train(
-        data=r"D:\FPT\vn.yaml",
+        data="vn_dataset.yaml",
         epochs=20,
         imgsz=640,
         batch=16,
-        lr0=0.001,      # thấp hơn pretrain
+        lr0=0.001,
         device=0,
-    
-        # Traffic-aware augmentation
         flipud=0.0,
         fliplr=0.5,
         degrees=0.1,
         mosaic=1.0,
- 
-        workers=4 # Number of data loading workers
+        workers=4,
+        project="runs/detect",
+        name="vnyolo_legacy",
     )
+
 
 if __name__ == "__main__":
     main()
