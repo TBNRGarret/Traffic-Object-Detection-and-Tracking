@@ -1,181 +1,111 @@
-# 🚦 Traffic Object Detection & Tracking (YOLOv11)
+# 🚦 Vietnam Traffic Object Detection & Tracking (YOLOv11)
 
 ## 📌 Overview
 
-This project focuses on **traffic video analysis** using **Deep Learning / Computer Vision**, including **object detection, tracking, model optimization, and edge-oriented deployment**.
+Dự án phát triển hệ thống **Nhận diện & Theo dõi phương tiện giao thông Việt Nam** sử dụng mô hình học sâu **YOLOv11** kết hợp thuật toán tracking **ByteTrack**, tối ưu hóa suy luận biên qua **ONNX Runtime**, và vòng lặp học chủ động (**Active Learning Loop**) để làm giàu dữ liệu từ video thực tế.
 
-The pipeline is built around **YOLOv11** and is trained in a **two-stage strategy**:
+---
 
-1. Pretraining on **UA-DETRAC** (generic traffic scenes)
-2. Fine-tuning on **Vietnam traffic data** (domain adaptation)
+## 🎯 Điểm nổi bật & Cải tiến hệ thống
 
-The final model supports **real-time vehicle detection & tracking** and is optimized for **deployment-oriented inference** using **ONNX Runtime**.
+1. **Dataset chuẩn hóa & Làm sạch**:
+   - Gộp từ 3 nguồn dữ liệu giao thông VN (`CanTho`, `vn1`, `vehicle`).
+   - Lọc sạch 100% ảnh trùng lặp và triệt tiêu **data leakage** giữa train/val/test (Dataset sạch: 14,155 ảnh).
+   - 4 nhãn chuẩn: `0: motorbike`, `1: car`, `2: bus`, `3: truck`.
+2. **Chiến lược huấn luyện trực tiếp (Direct Fine-tuning)**:
+   - Fine-tune thẳng từ trọng số COCO-pretrained (`yolo11n.pt` / `yolo11s.pt`) sang dữ liệu giao thông VN.
+   - Traffic-aware data augmentations: Cosine LR, Mosaic (tắt 10 epochs cuối), Mixup, Copy-paste.
+3. **Vòng lặp làm giàu dữ liệu (Active Learning)**:
+   - Khai thác mẫu khó (uncertainty mining, confidence 0.15 ~ 0.45) trực tiếp từ các video giao thông gốc.
+   - Tự động sinh nhãn dự đoán (pseudo-labels) để review nhanh và mở rộng tập huấn luyện.
+4. **Chuẩn hóa toàn diện**:
+   - 100% đường dẫn sử dụng tương đối (portable), không phụ thuộc môi trường máy cục bộ.
+   - Hỗ trợ CLI arguments linh hoạt trên mọi script.
 
+---
 
-## 🎯 Objectives
-
-* Detect and track traffic participants (motorbike, car, bus, truck)
-* Improve performance on **Vietnamese traffic scenes**
-* Optimize model for **edge / low-resource environments**
-* Align with real-world traffic AI applications
-
-
-## 🧠 Model & Techniques
-
-* **Model**: YOLOv11n (Ultralytics)
-* **Tasks**:
-
-  * Object Detection
-  * Multi-object Tracking (ByteTrack)
-* **Optimization**:
-
-  * Lightweight architecture selection
-  * ONNX export for deployment
-  * Inference benchmarking (latency & memory)
-* **Deployment mindset**:
-
-  * Batch = 1 inference
-  * Video stream processing
-  * CPU / GPU compatible
-
-
-## 📂 Datasets
-
-### 1️⃣ UA-DETRAC
-
-* Large-scale traffic dataset (cars, buses, trucks, vans)
-* High-resolution frames extracted from surveillance videos
-* Used for **pretraining** to learn generic traffic features
-
-### 2️⃣ Vietnam Traffic Dataset
-
-* Real traffic videos from Vietnam (dense motorbikes, mixed vehicles)
-* Used for **fine-tuning** to adapt model to local domain
-* Resolution: 1280×720 (auto-resized during training)
-
-📌 **Reason for two-stage training**
-Vietnam traffic distribution is very different from global datasets.
-Pretraining helps stabilize learning, while fine-tuning improves real-world accuracy.
-
-
-## 🏗️ Project Structure
+## 🏗️ Cấu trúc thư mục dự án
 
 ```text
-FPT/
-├── dataset/
-│   ├── train/
-│   │   ├── images/
-│   │   └── labels/
-│   ├── val/
-│   │   ├── images/
-│   │   └── labels/
-├── vietnam traffic vids/
-│   ├── nguyentraihn.mp4
-│   ├── chuongduonghn.mp4
-│   └── ...
-├── runs/
-│   └── detect/
-│       ├── train/
-│       ├── train2/
-│       ├── train3/
-│       └── train4/   # final finetuned model
-├── yolo.py           # training
-├── tracking_yolo.py  # tracking + video output
-├── export_onnx.py    # ONNX export
-├── benchmark_onnx.py # inference benchmarking
-└── README.md
+d:\Computer Vis Proj\
+└── Traffic-Object-Detection-and-Tracking\     ← DUY NHẤT 1 THƯ MỤC DỰ ÁN
+    ├── dataset\                               ← ⭐ GỘP TẤT CẢ DỮ LIỆU TẠI ĐÂY (git ignored)
+    │   ├── images\{train,val,test}\           ← 14,155 ảnh sạch
+    │   ├── labels\{train,val,test}\           ← 14,155 nhãn sạch
+    │   ├── videos\                            ← Video đường phố & camera giám sát
+    │   └── archive\                           ← UA-DETRAC + dữ liệu thô dự phòng
+    ├── weights\                               ← Trọng số model (.pt)
+    ├── runs\detect\                           ← Output log huấn luyện & checkpoints
+    ├── train_direct_vn.py                     ← ⭐ Script train trực tiếp trên VN dataset
+    ├── enrich_data.py                         ← ⭐ Vòng lặp Active Learning
+    ├── vn_dataset.yaml                        ← Config dataset chuẩn hóa
+    ├── tracking_yolo.py                       ← Multi-object tracking (ByteTrack)
+    ├── export_onnx.py                         ← Xuất mô hình sang định dạng ONNX
+    ├── benchmark_onnx.py                      ← Đánh giá độ trễ & FPS trên CPU/Edge
+    ├── onnx_testing.py                        ← Test suy luận mô hình ONNX
+    ├── framecutter.py                         ← Trích xuất frame từ video
+    ├── scriptprelabel.py                      ← Tự động gán nhãn hàng loạt
+    ├── Dockerfile & compose.yaml              ← Containerization
+    └── requirements.txt                       ← Thư viện phụ thuộc
 ```
 
-## 🏋️ Training
+---
 
-### Pretraining (UA-DETRAC)
+## 🚀 Hướng dẫn sử dụng
 
-```python
-model = YOLO("yolo11n.pt")
-model.train(
-    data="data.yaml",
-    imgsz=640,
-    batch=16,
-    epochs=25,
-    device=0
-)
+### 1. Cài đặt môi trường
+
+```bash
+pip install -r requirements.txt
+# Hoặc cài đặt trực tiếp Ultralytics:
+pip install ultralytics
 ```
 
-### Fine-tuning (Vietnam dataset)
+### 2. Huấn luyện mô hình trực tiếp (Phase 3)
 
-* Lower learning rate
-* Traffic-aware augmentation
-* Preserve pretrained features
+```bash
+python train_direct_vn.py
+```
+> Trọng số tốt nhất tự động lưu vào `runs/detect/vn_direct/weights/best.pt`.
 
+### 3. Nhận diện & Theo dõi (Tracking)
 
-## 🚗 Tracking (ByteTrack)
+```bash
+# Chạy với video mặc định
+python tracking_yolo.py
 
-```python
-model.track(
-    source="vietnam traffic vids/nguyentraihn.mp4",
-    tracker="bytetrack.yaml",
-    imgsz=640,
-    conf=0.25,
-    iou=0.5,
-    device=0,
-    save=True
-)
+# Hoặc truyền video và model tùy chọn
+python tracking_yolo.py --source "dataset/videos/vietnam_traffic_vids/chuongduonghn.mp4" --conf 0.3
 ```
 
-✔ Outputs video with:
+### 4. Vòng lặp làm giàu dữ liệu (Active Learning)
 
-* Bounding boxes
-* Object IDs (tracking)
-* Per-frame inference
+```bash
+python enrich_data.py \
+  --video "dataset/videos/vietnam_traffic_vids/nguyentraihn.mp4" \
+  --model "runs/detect/vn_direct/weights/best.pt" \
+  --conf-low 0.15 \
+  --conf-high 0.45
+```
+Các khung hình khó và nhãn đề xuất sẽ được lưu vào thư mục `enrichment/<video_name>/` để review trước khi đưa vào tập train.
 
+### 5. Xuất ONNX & Benchmark suy luận
 
-## ⚙️ Model Optimization & Deployment
+```bash
+# Xuất ONNX
+python export_onnx.py --model "runs/detect/vn_direct/weights/best.pt"
 
-### ONNX Export
-
-```python
-model.export(format="onnx", opset=12)
+# Đo độ trễ suy luận trên CPU
+python benchmark_onnx.py
 ```
 
-### ONNX Runtime Inference
+---
 
-* Batch size = 1
-* CPU / CUDA Execution Provider
-* Suitable for **edge-like environments**
+## 📊 Phân bố dữ liệu sau lọc sạch (Deduplicated)
 
-### Benchmarking
-
-* Warm-up + repeated inference
-* Measure:
-
-  * Preprocess time
-  * Inference latency
-  * Postprocess time
-
-This simulates **real-world edge deployment constraints**.
-
-
-## 📊 Results (Vietnam Fine-tuned Model)
-
-| Class     | mAP@50 | mAP@50-95 |
-| --------- | ------ | --------- |
-| Motorbike | ~0.95  | ~0.61     |
-| Car       | ~0.95  | ~0.71     |
-| Bus       | ~0.94  | ~0.76     |
-| Truck     | ~0.94  | ~0.71     |
-
-
-## 🔍 Key Learnings
-
-* Domain gap between global datasets and Vietnam traffic is significant
-* Pretrain → finetune strategy is crucial
-* ONNX greatly reduces deployment friction
-* Tracking adds strong practical value for traffic analysis
-* Memory & latency must be considered early for edge deployment
-
-## 🚀 Future Work
-
-* INT8 quantization with TensorRT
-* Pruning for further model compression
-* Deployment on embedded devices (Jetson / AI camera)
-* Traffic analytics (counting, speed estimation, ANPR)
+| Tập | Số lượng ảnh | Xe máy (0) | Ô tô (1) | Xe buýt (2) | Xe tải (3) |
+|:---|:---|:---|:---|:---|:---|
+| **Train** | 11,117 | Đa số | Trung bình | Ít | Ít |
+| **Validation** | 2,751 | Đa số | Trung bình | Ít | Ít |
+| **Test** | 287 | Cân đối | Cân đối | Cân đối | Cân đối |
+| **Tổng** | **14,155** | Không rò rỉ dữ liệu chéo (0 leakage) |
