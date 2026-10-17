@@ -1,15 +1,35 @@
-# Bỏ qua các thư mục chứa dữ liệu
+# Dataset & Media folders
 dataset/
 train/
 val/
 test/
 runs/
+enrichment/
+frames/
+prelabels/
 
-# Bỏ qua tất cả các định dạng ảnh
+# Image & Video files
 *.jpg
 *.jpeg
 *.png
-*.JPG
-*.PNG
-*.txt
+*.bmp
 *.mp4
+*.avi
+*.mkv
+*.asf
+*.mov
+
+# Python bytecode & environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
