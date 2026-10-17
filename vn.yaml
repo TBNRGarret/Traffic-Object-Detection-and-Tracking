@@ -1,8 +1,9 @@
+# Vietnam Traffic Dataset (Consolidated)
+path: dataset
 
-path: D:\FPT\dataset
-
-train: D:\FPT\dataset\train\images
-val: D:\FPT\dataset\val\images
+train: images/train
+val: images/val
+test: images/test
 
 nc: 4
 names:

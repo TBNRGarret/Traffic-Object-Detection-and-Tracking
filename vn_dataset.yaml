@@ -1,0 +1,16 @@
+# Vietnam Traffic Dataset (Cleaned & Consolidated)
+# 4 classes: motorbike, car, bus, truck
+# Train: 11,117 | Val: 2,751 | Test: 287
+
+path: dataset
+
+train: images/train
+val: images/val
+test: images/test
+
+nc: 4
+names:
+  0: motorbike
+  1: car
+  2: bus
+  3: truck
